@@ -12,7 +12,12 @@ public class Pig extends Animal {
 	// I've then found the solution at the link below
 	// ref. https://stackoverflow.com/questions/53191468/no-creators-like-default-construct-exist-cannot-deserialize-from-object-valu
 	// This was also mentioned in 28/03 class
-	public Pig() {} 
+	public Pig() {
+		
+		this.weightThreshold = weightThresholdPig; // a pig can only be sold if it weights more than 100kg - value defined in CA specs
+		this.marketPriceEstimate = marketPriceEstimatePig; // market price estimate of 1 pig
+		
+	} 
 	
 	public Pig(Float weight) {
 
