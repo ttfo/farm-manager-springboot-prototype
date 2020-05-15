@@ -234,57 +234,47 @@ public class FarmController {
 	/*
 	 * (5) END-POINT => "Hypothetical value of the farm stock"
 	 * Value of the farm assuming the price of each animal is set by a parameter in the HTTP request
+	 * Differently than end-point (4), as per CA specs weight threshold is NOT applied for this end-point
 	 * e.g. http://localhost:8080/currentValue?cow=350&pig=120&chicken=1
 	 */	
 
 	@GetMapping("farm-stock-value-hyp") // http://localhost:8080/farm-stock-value-hyp?cow=950&pig=420&chicken=6
-	public ResponseEntity<String> farmStockValueHyp(@RequestParam(required=false) Integer cowPrice, @RequestParam(required=false) Integer pigPrice, @RequestParam(required=false) Integer chickenPrice)  {
+										// http://localhost:8080/farm-stock-value-hyp?chicken=6 <= would also work
+	public ResponseEntity<Integer> farmStockValueHyp(@RequestParam(name="cow", required=false) Integer cowPrice, @RequestParam(name="pig", required=false) Integer pigPrice, @RequestParam(name="chicken", required=false) Integer chickenPrice)  {
 		
-		Map<String, Integer> summary = new HashMap<String, Integer>();
+		Map<String, Integer> livestockSummary = new HashMap<String, Integer>();
 		
 		for (Animal animal : animals) {
-
+			
 			String animalClass = animal.getClass().toString(); // Example of what it returns: "class ie.cct.Animals.Chicken"
-			String animalType = animalClass.substring(animalClass.lastIndexOf(".") + 1); // REF.
-																							// https://stackoverflow.com/questions/14316487/java-getting-a-substring-from-a-string-starting-after-a-particular-character
+			String animalType = animalClass.substring(animalClass.lastIndexOf(".") + 1); // REF. https://stackoverflow.com/questions/14316487/java-getting-a-substring-from-a-string-starting-after-a-particular-character			
+			
+			if (livestockSummary.get(animalType) == null) {
+				livestockSummary.put(animalType, 1);
 
-			if (summary.get(animalType) == null) {
-				summary.put(animalType, 1);
 			} else {
-				Integer count = summary.get(animalType);
-				summary.put(animalType, ++count);
-			}
+				Integer count = livestockSummary.get(animalType);
+				livestockSummary.put(animalType, ++count);
+			}			
+			
 		}
 		
-		Integer chickenValue = 0;
-		Integer cowValue = 0;
-		Integer pigValue = 0;
+		// REF. http://www.cafeaulait.org/course/week2/43.html
+		// example - (a > b) ? a(true) : b(false)
+		// if retrieved attributes are null, make them 0
+		// as we can still calculate the total, based on other valid attributes' values
 		
-		// Trying to avoid Null Pointer Exception
-		if (summary.get("Chicken") != null) {
-			if (chickenPrice == null) {
-				return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
-			} else {
-				chickenValue = (summary.get("Chicken")*chickenPrice);
-			}
-		}			
-		if (summary.get("Cow") != null && cowPrice != null) {
-			if (chickenPrice == null) {
-				return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
-			} else {			
-				cowValue = (summary.get("Cow")*cowPrice);
-			}
-		}
-		if (summary.get("Pig") != null && pigPrice != null) {
-			if (chickenPrice == null) {
-				return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
-			} else {		
-				pigValue = (summary.get("Pig")*pigPrice);
-			}
-		}
+		int pigCount = (livestockSummary.get("Pig") == null ? 0 : livestockSummary.get("Pig"));
+		int cowCount = (livestockSummary.get("Cow") == null ? 0 : livestockSummary.get("Cow"));
+		int chickenCount = (livestockSummary.get("Chicken") == null ? 0 : livestockSummary.get("Chicken"));
 		
-		//return new ResponseEntity<String>((chickenValue + cowValue + pigValue).toString(), HttpStatus.OK);
-		return new ResponseEntity<String>("OK", HttpStatus.OK);
+		int pigValue = pigCount * (pigPrice == null ? 0 : pigPrice);
+		int chickenValue = chickenCount * (chickenPrice == null ? 0 : chickenPrice);
+		int cowValue = cowCount * (cowPrice == null ? 0 : cowPrice);
+		
+		Integer farmValueHyp = pigValue + chickenValue + cowValue;
+		
+		return new ResponseEntity<Integer>(farmValueHyp, HttpStatus.OK);
 	}
 	
 }
