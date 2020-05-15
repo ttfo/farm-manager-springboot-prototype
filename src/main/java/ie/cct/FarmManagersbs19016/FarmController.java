@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,12 +31,25 @@ public class FarmController {
 		animals.add(new Cow(100.3f));
 		animals.add(new Chicken(3.5f));
 	}
+	
+	/*
+	 * (0) END-POINT => "Get my livestock"
+	 * This method is only for testing purposes, can be safely removed
+	 */	
+	@GetMapping("get-livestock") // http://localhost:8080/get-livestock
+	public List<Animal> getLivestock() { 
+		return animals;
+		//return animals.toString(); <= test point
+	}	
+	
 
 	/*
 	 * (1) END-POINT => "Add a new animal"
 	 */	
 	
 	@PostMapping("add-animal") // http://localhost:8080/add-animal
+	// Use Postman to post new 'Animal' objects (Postman collection available on the Github README.md)  
+	// RequestBody annotation - REF. https://javatutorial.net/requestbody-annotation-in-spring
 	public List<Animal> addAnimal(@RequestBody Animal animal) { // accepts "type": "Cow" | "Pig" | "Chicken"
 		animals.add(animal);
 		return animals;
@@ -133,21 +148,13 @@ public class FarmController {
 	public Map<String, Integer> animalsToBeSold() {
 		
 		Map<String, Integer> summary = new HashMap<String, Integer>();
-		Float cowThreshold = 300.0f;
-		Float pigThreshold = 100.0f;
-		Float chickenThreshold = 0.5f;
 		
 		for (Animal animal : animals) {
 			
 			String animalClass = animal.getClass().toString(); // Example of what it returns: "class ie.cct.Animals.Chicken"
 			String animalType = animalClass.substring(animalClass.lastIndexOf(".") + 1); // REF. https://stackoverflow.com/questions/14316487/java-getting-a-substring-from-a-string-starting-after-a-particular-character
 			
-			// setting condition to verify that animals meet the weight requirements 
-			boolean sellingConditions = (animalType.contains("Chicken") && animal.getWeight() >= chickenThreshold) ||
-					(animalType.contains("Cow") && animal.getWeight() >= cowThreshold) ||
-					(animalType.contains("Pig") && animal.getWeight() >= pigThreshold);
-			
-			if (sellingConditions) {
+			if (animal.getWeight() >= animal.getWeightThreshold()) {
 			
 				if (summary.get(animalType) == null) {
 					summary.put(animalType, 1);
@@ -169,33 +176,24 @@ public class FarmController {
 	@GetMapping("farm-stock-value") // http://localhost:8080/farm-stock-value
 	public Float farmStockValue() {
 		
-		Map<String, Integer> summary = new HashMap<String, Integer>();
-		Float cowThreshold = 300.0f;
-		Float pigThreshold = 100.0f;
-		Float chickenThreshold = 0.5f;
-		
-		// Price estimates per type of livestock
-		Float cowPriceEst = 1023.5f;
-		Float pigPriceEst = 378.4f;
-		Float chickenPriceEst = 7.8f;		
+		Map<String, Integer> livestockSummary = new HashMap<String, Integer>();
+		Map<String, Float> livestockValue = new HashMap<String, Float>();
 		
 		for (Animal animal : animals) {
 			
 			String animalClass = animal.getClass().toString(); // Example of what it returns: "class ie.cct.Animals.Chicken"
 			String animalType = animalClass.substring(animalClass.lastIndexOf(".") + 1); // REF. https://stackoverflow.com/questions/14316487/java-getting-a-substring-from-a-string-starting-after-a-particular-character
 			
-			// setting condition to verify that animals meet the weight requirements 
-			boolean sellingConditions = (animalType.contains("Chicken") && animal.getWeight() >= chickenThreshold) ||
-					(animalType.contains("Cow") && animal.getWeight() >= cowThreshold) ||
-					(animalType.contains("Pig") && animal.getWeight() >= pigThreshold);
+			if (animal.getWeight() >= animal.getWeightThreshold()) {
 			
-			if (sellingConditions) {
-			
-				if (summary.get(animalType) == null) {
-					summary.put(animalType, 1);
+				if (livestockSummary.get(animalType) == null) {
+					livestockSummary.put(animalType, 1);
+					livestockValue.put(animalType, 0.0f); // TODO not 100% sure here
 				} else {
-					Integer count = summary.get(animalType);
-					summary.put(animalType, ++count);
+					Integer count = livestockSummary.get(animalType);
+					Float aggrValue = count * animal.getMarketPriceEstimate();
+					livestockSummary.put(animalType, ++count);
+					livestockValue.put(animalType, ++aggrValue);
 				}
 			}	
 		}
@@ -205,14 +203,14 @@ public class FarmController {
 		Float pigValue = (float) 0;
 		
 		// Trying to avoid Null Pointer Exception
-		if (summary.get("Chicken") != null) {
-			chickenValue = (summary.get("Chicken")*chickenPriceEst);
+		if (livestockValue.get("Chicken") != null) {
+			chickenValue = (livestockValue.get("Chicken"));
 		}			
-		if (summary.get("Cow") != null) {
-			cowValue = (summary.get("Cow")*cowPriceEst);
+		if (livestockValue.get("Cow") != null) {
+			cowValue = (livestockValue.get("Cow"));
 		}
-		if (summary.get("Pig") != null) {
-			pigValue = (summary.get("Pig")*pigPriceEst);
+		if (livestockValue.get("Pig") != null) {
+			pigValue = (livestockValue.get("Pig"));
 		}
 		
 		return (chickenValue + cowValue + pigValue);
@@ -224,8 +222,8 @@ public class FarmController {
 	 * e.g. http://localhost:8080/currentValue?cow=350&pig=120&chicken=1
 	 */	
 
-	@GetMapping("farm-stock-value-hyp")
-	public int farmStockValueHyp(@RequestParam(required=true) int cowPrice, @RequestParam(required=true) int pigPrice, @RequestParam(required=true) int chickenPrice)  {
+	@GetMapping("farm-stock-value-hyp") // http://localhost:8080/currentValue?cow=950&pig=420&chicken=6
+	public ResponseEntity<String> farmStockValueHyp(@RequestParam(required=false) Integer cowPrice, @RequestParam(required=false) Integer pigPrice, @RequestParam(required=false) Integer chickenPrice)  {
 		
 		Map<String, Integer> summary = new HashMap<String, Integer>();
 		
@@ -243,22 +241,35 @@ public class FarmController {
 			}
 		}
 		
-		int chickenValue = 0;
-		int cowValue = 0;
-		int pigValue = 0;
+		Integer chickenValue = 0;
+		Integer cowValue = 0;
+		Integer pigValue = 0;
 		
 		// Trying to avoid Null Pointer Exception
 		if (summary.get("Chicken") != null) {
-			chickenValue = (summary.get("Chicken")*chickenPrice);
+			if (chickenPrice == null) {
+				return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+			} else {
+				chickenValue = (summary.get("Chicken")*chickenPrice);
+			}
 		}			
-		if (summary.get("Cow") != null) {
-			cowValue = (summary.get("Cow")*cowPrice);
+		if (summary.get("Cow") != null && cowPrice != null) {
+			if (chickenPrice == null) {
+				return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+			} else {			
+				cowValue = (summary.get("Cow")*cowPrice);
+			}
 		}
-		if (summary.get("Pig") != null) {
-			pigValue = (summary.get("Pig")*pigPrice);
+		if (summary.get("Pig") != null && pigPrice != null) {
+			if (chickenPrice == null) {
+				return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+			} else {		
+				pigValue = (summary.get("Pig")*pigPrice);
+			}
 		}
 		
-		return (chickenValue + cowValue + pigValue);
+		//return new ResponseEntity<String>((chickenValue + cowValue + pigValue).toString(), HttpStatus.OK);
+		return new ResponseEntity<String>("OK", HttpStatus.OK);
 	}
 	
 }
