@@ -14,16 +14,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.*;
 })
 public abstract class Animal {
 	
-	protected String type; // protected, as the value is defined in the sub-classes
+	//protected String type; // protected, as the value is defined in the sub-classes
 	protected Float weight;
 	
 	public Animal() {}
 
 	// SETTERS AND GETTERS
-	
-	public String getType() {
-		return type;
-	}
 
 	public Float getWeight() {
 		return weight;

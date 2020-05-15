@@ -21,19 +21,20 @@ public class FarmController {
 	
 	public FarmController() {
 		animals = new ArrayList<Animal>();
+		// Populate array list with a few animals
 		animals.add(new Pig(50.9f));
 		animals.add(new Chicken(2.3f));
 		animals.add(new Cow(100.3f));
 	}
 
 	/*
-	 * (1) "Add a new animal" endpoints
+	 * (1) END-POINT => "Add a new animal"
 	 */	
 	
 	@PostMapping("add-animal") // http://localhost:8080/add-animal
-	public String addAnimal(@RequestBody Animal animal) { // accepts "type": "Cow" | "Pig" | "Chicken"
+	public List<Animal> addAnimal(@RequestBody Animal animal) { // accepts "type": "Cow" | "Pig" | "Chicken"
 		animals.add(animal);
-		return "OK";
+		return animals;
 		//return animals.toString(); <= test point
 	}
 
@@ -57,5 +58,93 @@ public class FarmController {
 		return "OK";
 		//return animals.toString(); <= test point
 	}		
+	
+	/*
+	 * (2) END-POINT => "Average weight of each type of animal"
+	 */	
+	
+	@GetMapping("avg-weight")
+	public String avgWeight() {
+		
+		Float avgWeightTOT = 0.0f;
+		Float avgWeightChicken = 0.0f;
+		Float avgWeightCow = 0.0f;
+		Float avgWeightPig = 0.0f;
+		
+		int chickenCount = 0;
+		int cowCount = 0;
+		int pigCount = 0;
+		
+		for (Animal animal: animals) {
+			
+			avgWeightTOT += animal.getWeight();
+			
+			// We find instances of each type of animal
+			// to calculate the overall avg per animal type
+			if (animal instanceof Chicken) {
+				avgWeightChicken += animal.getWeight();
+				chickenCount += 1;
+			} else if (animal instanceof Cow) {
+				avgWeightCow += animal.getWeight();
+				cowCount += 1;
+			} else if (animal instanceof Pig) {
+				avgWeightPig += animal.getWeight();
+				pigCount += 1;
+			}
+			
+		}
+		
+		avgWeightTOT = avgWeightTOT/animals.size();
+		avgWeightChicken = avgWeightChicken/chickenCount;
+		avgWeightCow = avgWeightCow/cowCount;
+		avgWeightPig = avgWeightPig/pigCount;
+		
+		String result = 
+				"{ " +
+				"	avg-weight-chickens: "+ avgWeightChicken + "," +
+				"	avg-weight-cows: "+ avgWeightCow + "," +
+				"	avg-weight-pigs: "+ avgWeightPig +
+				" }";
+				
+				// Alternative user-friendly string
+//				"Average weight of all " +animals.size()+ " animals in the farm: " + avgWeightTOT
+//				+ "\r\n" + "Average weight of " +chickenCount+ " chickens in the farm: " + avgWeightChicken
+//				+ "\r\n" + "Average weight of " +cowCount+ " cows in the farm: " + avgWeightCow
+//				+ "\r\n" + "Average weight of " +pigCount+ " pigs in the farm: " + avgWeightPig;
+
+		return result;
+	}
+	
+	/*
+	 * (3) END-POINT => "Count of animals of each type ready to be sold" (given weight requirements)
+	 */	
+	
+	@GetMapping("animals-ready-to-sell")
+	public String animalsReady() {
+		// TODO
+		return "OK";
+	}
+	
+	/*
+	 * (4) END-POINT => "Value of the full farm stock" (price of all the animals that can be sold right now)
+	 */	
+
+	@GetMapping("farm-stock-value")
+	public String farmStockValue() {
+		// TODO
+		return "OK";
+	}	
+
+	/*
+	 * (5) END-POINT => "Hypothetical value of the farm stock"
+	 * Value of the farm assuming the price of each animal is set by a parameter in the HTTP request
+	 * e.g. http://localhost:8080/currentValue?cow=350&pig=120&chicken=1
+	 */	
+
+	@GetMapping("farm-stock-value-hyp")
+	public String farmStockValueHyp() {
+		// TODO
+		return "OK";	
+	}
 	
 }
