@@ -32,7 +32,7 @@ import org.springframework.context.annotation.ComponentScan;
 	 */
 
 // REF. VIDEO RECORDING CLASS WEEK6 (Mar23-29) ... Controller explanation from ~min 34
-// min 55
+// also VIDEO RECORDING CLASS SAT 28/03 from ~min 50
 
 @SpringBootApplication
 @ComponentScan("ie.cct.*") // scans all packages under 'ie.cct, e.g. package ie.cct.FarmManagersbs19016

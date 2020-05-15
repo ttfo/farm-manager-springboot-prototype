@@ -2,6 +2,7 @@ package ie.cct.Animals;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
 
+//About the below annotation (needed to achieve polymorphic json) ...
 // REF https://stackoverflow.com/questions/17247189/spring-requestbody-containing-a-list-of-different-types-but-same-interface
 @JsonRootName("Pig")
 public class Pig extends Animal {
