@@ -42,7 +42,6 @@ public class Pig extends Animal {
     	// setting default value, regardless of value provided in payload
     	// marketPriceEstimate is a set value and a custom value cannot be provided
     	// REF. https://stackoverflow.com/questions/51268835/spring-rest-controller-having-a-request-body-with-generated-default-value
-    	// For calculations, marketPriceEstimateCustom attribute can be used instead
     	
         this.marketPriceEstimate = marketPriceEstimatePig; 
         																			

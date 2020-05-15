@@ -1,6 +1,7 @@
 package ie.cct.FarmManagersbs19016;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import ie.cct.Animals.Animal;
@@ -37,7 +39,7 @@ public class FarmController {
 	 * ALL END-POINTS:
 	 * [0 - GET] http://localhost:8080/get-livestock (just for testing)
 	 * [1 - POST] http://localhost:8080/add-animal (add new animal to livestock / POST, e.g. through Postman)
-	 * [2 - GET] http://localhost:8080/avg-weight (avg. weight by animal type)
+	 * [2 - GET] http://localhost:8080/avg-weight?type=chicken (avg. weight by animal type)
 	 * [3 - GET] http://localhost:8080/animals-ready-to-sell (count of animals that meet min weight requirements and can be sold)
 	 * [4 - GET] http://localhost:8080/farm-stock-value (value of owned livestock)
 	 * [5 - GET] http://localhost:8080/farm-stock-value-hyp?cow=950&pig=420&chicken=6 (hyp value of owned livestock)
@@ -61,89 +63,91 @@ public class FarmController {
 	@PostMapping("add-animal") // http://localhost:8080/add-animal
 	// Use Postman to post new 'Animal' objects (Postman collection available on the Github README.md)  
 	// RequestBody annotation - REF. https://javatutorial.net/requestbody-annotation-in-spring
-	public List<Animal> addAnimal(@RequestBody Animal animal) { // accepts "type": "Cow" | "Pig" | "Chicken"
+	@ResponseBody
+	public ResponseEntity<String> addAnimal(@RequestBody Animal animal) { // accepts "type": "Cow" | "Pig" | "Chicken"
 		animals.add(animal);
-		return animals;
-		//return animals.toString(); <= test point
+		System.out.println(animals); // <= test point
+		return new ResponseEntity<String>("Animal successfully added to livestock",HttpStatus.OK);
 	}
 
 	@PostMapping("add-pig") // http://localhost:8080/add-pig
-	public String addPig(@RequestBody Pig pig) { // only accepts "type": "Pig"
+	@ResponseBody
+	public ResponseEntity<String> addPig(@RequestBody Pig pig) { // only accepts "type": "Pig"
 		animals.add(pig);
-		return "OK";
-		//return animals.toString(); <= test point
+		return new ResponseEntity<String>("Animal successfully added to livestock",HttpStatus.OK);
 	}	
 	
 	@PostMapping("add-chicken") // http://localhost:8080/add-chicken
-	public String addChicken(@RequestBody Chicken chicken) { // only accepts "type": "Chicken"
+	@ResponseBody
+	public ResponseEntity<String> addChicken(@RequestBody Chicken chicken) { // only accepts "type": "Chicken"
 		animals.add(chicken);
-		return "OK";
-		//return animals.toString(); <= test point
+		return new ResponseEntity<String>("Animal successfully added to livestock",HttpStatus.OK);
 	}	
 	
 	@PostMapping("add-cow") // http://localhost:8080/add-cow
-	public String addCow(@RequestBody Cow cow) { // only accepts "type": "Cow"
+	@ResponseBody
+	public ResponseEntity<String> addCow(@RequestBody Cow cow) { // only accepts "type": "Cow"
 		animals.add(cow);
-		return "OK";
-		//return animals.toString(); <= test point
+		return new ResponseEntity<String>("Animal successfully added to livestock",HttpStatus.OK);
 	}		
 	
 	/*
 	 * (2) END-POINT => "Average weight of each type of animal"
 	 */	
 	
-	@GetMapping("avg-weight") // http://localhost:8080/avg-weight
-	public String avgWeight() {
+	@GetMapping("avg-weight") // e.g http://localhost:8080/avg-weight?type=cow
+	public ResponseEntity<Float> avgWeight(@RequestParam(name="type", required=true) String animalType) {
 		
-		Float avgWeightTOT = 0.0f;
-		Float avgWeightChicken = 0.0f;
-		Float avgWeightCow = 0.0f;
-		Float avgWeightPig = 0.0f;
+		List<String> validTypes = Arrays.asList("chicken","cow","pig","all");
 		
-		int chickenCount = 0;
-		int cowCount = 0;
-		int pigCount = 0;
-		
-		for (Animal animal: animals) {
+		if (!validTypes.contains(animalType)) {
 			
-			avgWeightTOT += animal.getWeight();
+			return new ResponseEntity<Float>(HttpStatus.NOT_FOUND);	
 			
-			// We find instances of each type of animal
-			// to calculate the overall avg per animal type
-			if (animal instanceof Chicken) {
-				avgWeightChicken += animal.getWeight();
-				chickenCount += 1;
-			} else if (animal instanceof Cow) {
-				avgWeightCow += animal.getWeight();
-				cowCount += 1;
-			} else if (animal instanceof Pig) {
-				avgWeightPig += animal.getWeight();
-				pigCount += 1;
+		} else {
+		
+			Float avgWeightTOT = 0.0f;
+			Float avgWeightChicken = 0.0f;
+			Float avgWeightCow = 0.0f;
+			Float avgWeightPig = 0.0f;
+			
+			int chickenCount = 0;
+			int cowCount = 0;
+			int pigCount = 0;
+			
+			for (Animal animal: animals) {
+				
+				avgWeightTOT += animal.getWeight();
+				
+				// We find instances of each type of animal
+				// to calculate the overall avg per animal type
+				if (animal instanceof Chicken) {
+					avgWeightChicken += animal.getWeight();
+					chickenCount += 1;
+				} else if (animal instanceof Cow) {
+					avgWeightCow += animal.getWeight();
+					cowCount += 1;
+				} else if (animal instanceof Pig) {
+					avgWeightPig += animal.getWeight();
+					pigCount += 1;
+				}
+				
 			}
 			
+			avgWeightTOT = avgWeightTOT/animals.size();
+			avgWeightChicken = avgWeightChicken/chickenCount;
+			avgWeightCow = avgWeightCow/cowCount;
+			avgWeightPig = avgWeightPig/pigCount;
+			
+			Map<String, Float> livestockAvgWeight = new HashMap<String, Float>();
+			livestockAvgWeight.put("chicken", avgWeightChicken);
+			livestockAvgWeight.put("cow", avgWeightCow);
+			livestockAvgWeight.put("pig", avgWeightPig);
+			livestockAvgWeight.put("all", avgWeightTOT);
+	
+			return new ResponseEntity<Float>(livestockAvgWeight.get(animalType),HttpStatus.OK);
+		
 		}
-		
-		avgWeightTOT = avgWeightTOT/animals.size();
-		avgWeightChicken = avgWeightChicken/chickenCount;
-		avgWeightCow = avgWeightCow/cowCount;
-		avgWeightPig = avgWeightPig/pigCount;
-		
-		String tab = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-		String result = 
-				"{ " + "<br>" +
-				tab + "avg-weight-animals: "+ avgWeightTOT + "," + "<br>" +
-				tab + "avg-weight-chickens: "+ avgWeightChicken + "," + "<br>" +
-				tab + "avg-weight-cows: "+ avgWeightCow + "," + "<br>" +
-				tab + "avg-weight-pigs: "+ avgWeightPig + "<br>" +
-				" }";
-				
-				// Alternative user-friendly string
-//				"Average weight of all " +animals.size()+ " animals in the farm: " + avgWeightTOT + "<br>" +
-//				+ "\r\n" + "Average weight of " +chickenCount+ " chickens in the farm: " + avgWeightChicken + "<br>" +
-//				+ "\r\n" + "Average weight of " +cowCount+ " cows in the farm: " + avgWeightCow + "<br>" +
-//				+ "\r\n" + "Average weight of " +pigCount+ " pigs in the farm: " + avgWeightPig;
-
-		return result;
 	}
 	
 	/*

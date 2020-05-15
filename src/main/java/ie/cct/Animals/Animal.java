@@ -17,7 +17,6 @@ public abstract class Animal {
 	protected Float weight; // weight of the individual animal
 	protected Float weightThreshold; // threshold at which animals can be sold (Cows - 300 KG, Pigs 100 KG, Chickens - 0.5 KG)
 	protected Float marketPriceEstimate; // market price estimate per unit of animal type (e.g. for 1 cow, 1017.5 EUR)
-	protected Float marketPriceEstimateCustom; // custom value to perform hypothesis
 	
 	public Animal() {}
 
@@ -45,14 +44,6 @@ public abstract class Animal {
 
 	public void setMarketPriceEstimate(Float marketPriceEstimate) {
 		// this is set in sub-class
-	}
-
-	public Float getMarketPriceEstimateCustom() {
-		return marketPriceEstimateCustom;
-	}
-
-	public void setMarketPriceEstimateCustom(Float marketPriceEstimateCustom) {
-		this.marketPriceEstimateCustom = marketPriceEstimateCustom;
 	}
 
 }
