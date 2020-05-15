@@ -19,9 +19,7 @@ public abstract class Animal {
 	protected Float marketPriceEstimate; // market price estimate per unit of animal type (e.g. for 1 cow, 1017.5 EUR)
 	protected Float marketPriceEstimateCustom; // custom value to perform hypothesis
 	
-	public Animal() {
-		//this.setWeightThreshold(weightThreshold); // this is required to populate correctly payload missing weightThreshold in POST
-	}
+	public Animal() {}
 
 	// SETTERS AND GETTERS
 	
@@ -38,25 +36,7 @@ public abstract class Animal {
 	}
 	
     public void setWeightThreshold(Float weightThreshold) {
-    	
-    	this.weightThreshold = 333.0f;
-    	
-//    	// TODO possibly not needed
-//    	String animalType = this.getClass().toString();
-//    	
-//    	if (animalType != null && animalType.contentEquals("Cow")) {
-//    		this.weightThreshold = weightThreshold != null ? weightThreshold : 333.0f; // setting default value if payload is missing weightThreshold
-//    	}																				// REF. https://stackoverflow.com/questions/51268835/spring-rest-controller-having-a-request-body-with-generated-default-value
-//    	else if (animalType != null && animalType.contentEquals("Pig")) {
-//    		this.weightThreshold = weightThreshold != null ? weightThreshold : 100.0f; 
-//    	}
-//    	else if (animalType != null && animalType.contentEquals("Chicken")) {
-//    		this.weightThreshold = weightThreshold != null ? weightThreshold : 0.5f; 
-//    	}
-//    	else {
-//    		this.weightThreshold = weightThreshold != null ? weightThreshold : -1f; // we can implement weightThreshold>=0 to validate entries
-//    	}
-    	
+    	// this is set in sub-class
     }
 
 	public Float getMarketPriceEstimate() {
@@ -64,23 +44,7 @@ public abstract class Animal {
 	}
 
 	public void setMarketPriceEstimate(Float marketPriceEstimate) {
-
-		// TODO possibly not needed
-//    	String animalType = this.getClass().toString();
-//    	
-//    	if (animalType != null && animalType.contentEquals("Cow")) {
-//    		this.marketPriceEstimate = marketPriceEstimate != null ? marketPriceEstimate : 1050.0f; // setting default value if payload is missing weightThreshold
-//    	}																				// REF. https://stackoverflow.com/questions/51268835/spring-rest-controller-having-a-request-body-with-generated-default-value
-//    	else if (animalType != null && animalType.contentEquals("Pig")) {
-//    		this.marketPriceEstimate = marketPriceEstimate != null ? marketPriceEstimate : 399.9f; 
-//    	}
-//    	else if (animalType != null && animalType.contentEquals("Chicken")) {
-//    		this.marketPriceEstimate = marketPriceEstimate != null ? marketPriceEstimate : 3.5f; 
-//    	}
-//    	else {
-//    		this.marketPriceEstimate = marketPriceEstimate != null ? marketPriceEstimate : 0.0f; // this should nullify invalid entries
-//    	}
-		
+		// this is set in sub-class
 	}
 
 	public Float getMarketPriceEstimateCustom() {
