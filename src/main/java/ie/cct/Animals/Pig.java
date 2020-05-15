@@ -5,8 +5,8 @@ package ie.cct.Animals;
 //@JsonRootName("Pig") - This would be an alternative to @JsonTypeInfo and @JsonSubTypes used in parent class
 public class Pig extends Animal {
 	
-	Float weightThresholdPig = 100.0f;
-	Float marketPriceEstimatePig = 399.9f;	
+	Float weightThresholdPig = 100.0f; // value defined in CA specs
+	Float marketPriceEstimatePig = 399.9f; // current est. of the price of 1 unit of livestock 
 	
 	// I was facing error "cannot deserialize from Object value" in Postman without default constructor
 	// I've then found the solution at the link below

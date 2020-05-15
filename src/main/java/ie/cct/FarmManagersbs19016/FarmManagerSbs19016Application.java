@@ -40,9 +40,10 @@ public class FarmManagerSbs19016Application {
 	
 	public static void main(String[] args) {
 		
-		//new TestController().test("test", "test"); // <= just an example
-		
 		SpringApplication.run(FarmManagerSbs19016Application.class, args);
+		
+		//new FarmController().addAnimal(new Chicken(33.5f)); // <= just an example of alternative implementation
+		
 	}
 
 }

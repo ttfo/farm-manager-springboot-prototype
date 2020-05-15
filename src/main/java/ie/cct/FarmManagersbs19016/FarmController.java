@@ -33,6 +33,16 @@ public class FarmController {
 	}
 	
 	/*
+	 * ALL END-POINTS:
+	 * [0 - GET] http://localhost:8080/get-livestock (just for testing)
+	 * [1 - POST] http://localhost:8080/add-animal (add new animal to livestock / POST, e.g. through Postman)
+	 * [2 - GET] http://localhost:8080/avg-weight (avg. weight by animal type)
+	 * [3 - GET] http://localhost:8080/animals-ready-to-sell (count of animals that meet min weight requirements and can be sold)
+	 * [4 - GET] http://localhost:8080/farm-stock-value (value of owned livestock)
+	 * [5 - GET] http://localhost:8080/farm-stock-value-hyp?cow=950&pig=420&chicken=6 (hyp value of owned livestock)
+	 */	
+	
+	/*
 	 * (0) END-POINT => "Get my livestock"
 	 * This method is only for testing purposes, can be safely removed
 	 */	
@@ -188,12 +198,12 @@ public class FarmController {
 			
 				if (livestockSummary.get(animalType) == null) {
 					livestockSummary.put(animalType, 1);
-					livestockValue.put(animalType, 0.0f); // TODO not 100% sure here
+					livestockValue.put(animalType, animal.getMarketPriceEstimate()); // starts up map with value of initial pair for each animal type
+																						// est. price is the same across same animal types (e.g. for all chickens)
+																						// so we only need to retrieve it once
 				} else {
 					Integer count = livestockSummary.get(animalType);
-					Float aggrValue = count * animal.getMarketPriceEstimate();
 					livestockSummary.put(animalType, ++count);
-					livestockValue.put(animalType, ++aggrValue);
 				}
 			}	
 		}
@@ -203,15 +213,20 @@ public class FarmController {
 		Float pigValue = (float) 0;
 		
 		// Trying to avoid Null Pointer Exception
-		if (livestockValue.get("Chicken") != null) {
-			chickenValue = (livestockValue.get("Chicken"));
+		if (livestockSummary.get("Chicken") != null) {
+			chickenValue = livestockSummary.get("Chicken") * livestockValue.get("Chicken");
 		}			
-		if (livestockValue.get("Cow") != null) {
-			cowValue = (livestockValue.get("Cow"));
+		if (livestockSummary.get("Cow") != null) {		
+			cowValue = livestockSummary.get("Cow") * livestockValue.get("Cow");
 		}
-		if (livestockValue.get("Pig") != null) {
-			pigValue = (livestockValue.get("Pig"));
+		if (livestockSummary.get("Pig") != null) {		
+			pigValue = livestockSummary.get("Pig") * livestockValue.get("Pig");
 		}
+		
+		// Just for testing, System.out.println below can be safely removed if not needed
+		System.out.println("chickenValue: " + chickenValue + "\r\n" + 
+				"cowValue: " + cowValue + "\r\n" + 
+				"pigValue: " + pigValue + "\r\n");
 		
 		return (chickenValue + cowValue + pigValue);
 	}
@@ -222,7 +237,7 @@ public class FarmController {
 	 * e.g. http://localhost:8080/currentValue?cow=350&pig=120&chicken=1
 	 */	
 
-	@GetMapping("farm-stock-value-hyp") // http://localhost:8080/currentValue?cow=950&pig=420&chicken=6
+	@GetMapping("farm-stock-value-hyp") // http://localhost:8080/farm-stock-value-hyp?cow=950&pig=420&chicken=6
 	public ResponseEntity<String> farmStockValueHyp(@RequestParam(required=false) Integer cowPrice, @RequestParam(required=false) Integer pigPrice, @RequestParam(required=false) Integer chickenPrice)  {
 		
 		Map<String, Integer> summary = new HashMap<String, Integer>();
