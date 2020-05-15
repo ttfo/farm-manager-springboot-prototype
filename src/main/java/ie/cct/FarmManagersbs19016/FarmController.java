@@ -130,7 +130,7 @@ public class FarmController {
 	 */	
 	
 	@GetMapping("animals-ready-to-sell")  // http://localhost:8080/animals-ready-to-sell
-	public Map<String, Integer> String() {
+	public Map<String, Integer> animalsToBeSold() {
 		
 		Map<String, Integer> summary = new HashMap<String, Integer>();
 		Float cowThreshold = 300.0f;
@@ -166,11 +166,57 @@ public class FarmController {
 	 * (4) END-POINT => "Value of the full farm stock" (price of all the animals that can be sold right now)
 	 */	
 
-	@GetMapping("farm-stock-value")
-	public String farmStockValue() {
-		// TODO
-		return "OK";
-	}	
+	@GetMapping("farm-stock-value") // http://localhost:8080/farm-stock-value
+	public Float farmStockValue() {
+		
+		Map<String, Integer> summary = new HashMap<String, Integer>();
+		Float cowThreshold = 300.0f;
+		Float pigThreshold = 100.0f;
+		Float chickenThreshold = 0.5f;
+		
+		// Price estimates per type of livestock
+		Float cowPriceEst = 1023.5f;
+		Float pigPriceEst = 378.4f;
+		Float chickenPriceEst = 7.8f;		
+		
+		for (Animal animal : animals) {
+			
+			String animalClass = animal.getClass().toString(); // Example of what it returns: "class ie.cct.Animals.Chicken"
+			String animalType = animalClass.substring(animalClass.lastIndexOf(".") + 1); // REF. https://stackoverflow.com/questions/14316487/java-getting-a-substring-from-a-string-starting-after-a-particular-character
+			
+			// setting condition to verify that animals meet the weight requirements 
+			boolean sellingConditions = (animalType.contains("Chicken") && animal.getWeight() >= chickenThreshold) ||
+					(animalType.contains("Cow") && animal.getWeight() >= cowThreshold) ||
+					(animalType.contains("Pig") && animal.getWeight() >= pigThreshold);
+			
+			if (sellingConditions) {
+			
+				if (summary.get(animalType) == null) {
+					summary.put(animalType, 1);
+				} else {
+					Integer count = summary.get(animalType);
+					summary.put(animalType, ++count);
+				}
+			}	
+		}
+		
+		Float chickenValue = (float) 0;
+		Float cowValue = (float) 0;
+		Float pigValue = (float) 0;
+		
+		// Trying to avoid Null Pointer Exception
+		if (summary.get("Chicken") != null) {
+			chickenValue = (summary.get("Chicken")*chickenPriceEst);
+		}			
+		if (summary.get("Cow") != null) {
+			cowValue = (summary.get("Cow")*cowPriceEst);
+		}
+		if (summary.get("Pig") != null) {
+			pigValue = (summary.get("Pig")*pigPriceEst);
+		}
+		
+		return (chickenValue + cowValue + pigValue);
+	}
 
 	/*
 	 * (5) END-POINT => "Hypothetical value of the farm stock"
@@ -179,9 +225,40 @@ public class FarmController {
 	 */	
 
 	@GetMapping("farm-stock-value-hyp")
-	public String farmStockValueHyp() {
-		// TODO
-		return "OK";	
+	public int farmStockValueHyp(@RequestParam(required=true) int cowPrice, @RequestParam(required=true) int pigPrice, @RequestParam(required=true) int chickenPrice)  {
+		
+		Map<String, Integer> summary = new HashMap<String, Integer>();
+		
+		for (Animal animal : animals) {
+
+			String animalClass = animal.getClass().toString(); // Example of what it returns: "class ie.cct.Animals.Chicken"
+			String animalType = animalClass.substring(animalClass.lastIndexOf(".") + 1); // REF.
+																							// https://stackoverflow.com/questions/14316487/java-getting-a-substring-from-a-string-starting-after-a-particular-character
+
+			if (summary.get(animalType) == null) {
+				summary.put(animalType, 1);
+			} else {
+				Integer count = summary.get(animalType);
+				summary.put(animalType, ++count);
+			}
+		}
+		
+		int chickenValue = 0;
+		int cowValue = 0;
+		int pigValue = 0;
+		
+		// Trying to avoid Null Pointer Exception
+		if (summary.get("Chicken") != null) {
+			chickenValue = (summary.get("Chicken")*chickenPrice);
+		}			
+		if (summary.get("Cow") != null) {
+			cowValue = (summary.get("Cow")*cowPrice);
+		}
+		if (summary.get("Pig") != null) {
+			pigValue = (summary.get("Pig")*pigPrice);
+		}
+		
+		return (chickenValue + cowValue + pigValue);
 	}
 	
 }
