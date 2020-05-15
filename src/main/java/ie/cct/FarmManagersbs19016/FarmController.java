@@ -1,7 +1,9 @@
 package ie.cct.FarmManagersbs19016;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,8 +25,9 @@ public class FarmController {
 		animals = new ArrayList<Animal>();
 		// Populate array list with a few animals
 		animals.add(new Pig(50.9f));
-		animals.add(new Chicken(2.3f));
+		animals.add(new Chicken(0.4f));
 		animals.add(new Cow(100.3f));
+		animals.add(new Chicken(3.5f));
 	}
 
 	/*
@@ -63,7 +66,7 @@ public class FarmController {
 	 * (2) END-POINT => "Average weight of each type of animal"
 	 */	
 	
-	@GetMapping("avg-weight")
+	@GetMapping("avg-weight") // http://localhost:8080/avg-weight
 	public String avgWeight() {
 		
 		Float avgWeightTOT = 0.0f;
@@ -99,17 +102,19 @@ public class FarmController {
 		avgWeightCow = avgWeightCow/cowCount;
 		avgWeightPig = avgWeightPig/pigCount;
 		
+		String tab = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 		String result = 
-				"{ " +
-				"	avg-weight-chickens: "+ avgWeightChicken + "," +
-				"	avg-weight-cows: "+ avgWeightCow + "," +
-				"	avg-weight-pigs: "+ avgWeightPig +
+				"{ " + "<br>" +
+				tab + "avg-weight-animals: "+ avgWeightTOT + "," + "<br>" +
+				tab + "avg-weight-chickens: "+ avgWeightChicken + "," + "<br>" +
+				tab + "avg-weight-cows: "+ avgWeightCow + "," + "<br>" +
+				tab + "avg-weight-pigs: "+ avgWeightPig + "<br>" +
 				" }";
 				
 				// Alternative user-friendly string
-//				"Average weight of all " +animals.size()+ " animals in the farm: " + avgWeightTOT
-//				+ "\r\n" + "Average weight of " +chickenCount+ " chickens in the farm: " + avgWeightChicken
-//				+ "\r\n" + "Average weight of " +cowCount+ " cows in the farm: " + avgWeightCow
+//				"Average weight of all " +animals.size()+ " animals in the farm: " + avgWeightTOT + "<br>" +
+//				+ "\r\n" + "Average weight of " +chickenCount+ " chickens in the farm: " + avgWeightChicken + "<br>" +
+//				+ "\r\n" + "Average weight of " +cowCount+ " cows in the farm: " + avgWeightCow + "<br>" +
 //				+ "\r\n" + "Average weight of " +pigCount+ " pigs in the farm: " + avgWeightPig;
 
 		return result;
@@ -117,12 +122,44 @@ public class FarmController {
 	
 	/*
 	 * (3) END-POINT => "Count of animals of each type ready to be sold" (given weight requirements)
+	 * 
+	 * 	 	> The animals can only be sold if they reach a certain weight:
+	 * 		- Cows - 300 KG
+	 * 		- Pigs 100 KG
+	 * 		- Chickens - 0.5 KG
 	 */	
 	
-	@GetMapping("animals-ready-to-sell")
-	public String animalsReady() {
-		// TODO
-		return "OK";
+	@GetMapping("animals-ready-to-sell")  // http://localhost:8080/animals-ready-to-sell
+	public Map<String, Integer> String() {
+		
+		Map<String, Integer> summary = new HashMap<String, Integer>();
+		Float cowThreshold = 300.0f;
+		Float pigThreshold = 100.0f;
+		Float chickenThreshold = 0.5f;
+		
+		for (Animal animal : animals) {
+			
+			String animalClass = animal.getClass().toString(); // Example of what it returns: "class ie.cct.Animals.Chicken"
+			String animalType = animalClass.substring(animalClass.lastIndexOf(".") + 1); // REF. https://stackoverflow.com/questions/14316487/java-getting-a-substring-from-a-string-starting-after-a-particular-character
+			
+			// setting condition to verify that animals meet the weight requirements 
+			boolean sellingConditions = (animalType.contains("Chicken") && animal.getWeight() >= chickenThreshold) ||
+					(animalType.contains("Cow") && animal.getWeight() >= cowThreshold) ||
+					(animalType.contains("Pig") && animal.getWeight() >= pigThreshold);
+			
+			if (sellingConditions) {
+			
+				if (summary.get(animalType) == null) {
+					summary.put(animalType, 1);
+				} else {
+					Integer count = summary.get(animalType);
+					summary.put(animalType, ++count);
+				}
+			
+			}
+			
+		}
+		return summary;
 	}
 	
 	/*
